@@ -11,16 +11,24 @@ export interface Order {
   };
 }
 
-export interface Product {
-  id: string;
-  name: string;
-  isActive: boolean;
-  price: number;
-}
 
 export interface DashboardStat {
   label: string;
   value: string | number;
   icon: React.ReactNode;
   description: string;
+}
+export interface Variant {
+  id: string;
+  name: string;
+  stock: number;
+  priceModifier: number;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category: { name: string } | string;
+  isActive: boolean;
+  variants: Variant[];
 }

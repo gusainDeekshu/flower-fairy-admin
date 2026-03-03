@@ -28,7 +28,7 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders?.map((order: any) => (
+            {Array.isArray(orders) && orders?.map((order: any) => (
               <tr key={order.id} className="border-b">
                 <td className="p-4">{order.user.name}</td>
                 <td className="p-4">₹{order.totalAmount}</td>
