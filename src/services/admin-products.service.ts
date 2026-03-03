@@ -5,6 +5,9 @@ export const adminProductService = {
   updateProduct: async (id: string, data: any) => {
     return apiClient.put(`/admin/products/${id}`, data);
   },
+  createProduct: (data: any) => {
+    return apiClient.post('/admin/products', data);
+  },
 
   updateVariant: async (variantId: string, stock: number, priceModifier: number) => {
     return apiClient.put(`/admin/products/variants/${variantId}`, {

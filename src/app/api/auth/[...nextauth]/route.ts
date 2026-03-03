@@ -6,12 +6,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   providers: [
-    // 1. Google Login
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    // 2. NestJS Backend Login
     CredentialsProvider({
       name: "Admin Login",
       credentials: {
@@ -19,14 +17,11 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          {
-            method: "POST",
-            body: JSON.stringify(credentials),
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          method: "POST",
+          body: JSON.stringify(credentials),
+          headers: { "Content-Type": "application/json" },
+        });
         const data = await res.json();
         if (res.ok && data.user?.role === "ADMIN") {
           return { ...data.user, accessToken: data.access_token };
@@ -36,27 +31,30 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    // src/app/api/auth/[...nextauth]/route.ts
-async signIn({ user, account }) {
-  if (account?.provider === "google") {
-    try {
-      // Points to the new /users/check-admin endpoint
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-admin?email=${user.email}`);
-      const data = await res.json();
-      
-      // AccessDenied is thrown if this returns false
-      return data.isAdmin === true;
-    } catch (error) {
-      console.error("Connection to backend failed:", error);
-      return false;
-    }
-  }
-  return true;
-},
-    async jwt({ token, user, account }) {
+    async signIn({ user, account }: any) {
+      if (account?.provider === "google") {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-admin?email=${user.email}`);
+          const data = await res.json();
+
+          if (data.isAdmin && data.accessToken) {
+            // Pass the BACKEND token to the user object for the jwt() callback
+            user.accessToken = data.accessToken;
+            user.role = "ADMIN";
+            return true;
+          }
+          return false; // Not an admin in our DB
+        } catch (error) {
+          console.error("Auth Handshake Failed:", error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user }: any) {
       if (user) {
-        token.role = (user as any).role || "ADMIN";
-        token.accessToken = (user as any).accessToken || account?.id_token;
+        token.role = user.role;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
