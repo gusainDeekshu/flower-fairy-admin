@@ -33,7 +33,7 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders?.map((order: any) => (
+            {Array.isArray(orders) && orders?.map((order: any) => (
               <tr key={order.id} className="border-b last:border-0">
                 <td className="p-4 font-mono text-sm">{order.id.slice(-8)}</td>
                 <td className="p-4">{order.user.name}</td>
