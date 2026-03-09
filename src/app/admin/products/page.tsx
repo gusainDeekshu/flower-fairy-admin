@@ -56,7 +56,7 @@ export default function ProductsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products?.map((product) => (
+        {Array.isArray(products) && products?.map((product) => (
           <div key={product.id} className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative">
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               {/* EDIT BUTTON NOW FUNCTIONAL */}

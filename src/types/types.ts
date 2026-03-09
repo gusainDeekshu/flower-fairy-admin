@@ -30,5 +30,7 @@ export interface Product {
   name: string;
   category: { name: string } | string;
   isActive: boolean;
+   description?: string;
+  price: number;
   variants: Variant[];
 }

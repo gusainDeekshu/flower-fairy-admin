@@ -21,6 +21,7 @@ export default function AdminDashboard() {
     queryKey: ['products'], 
     queryFn: async () => {
       const data = await apiClient.get('/products');
+      console.log('Fetched products:', data); // Debug log to inspect raw response
       return data as unknown as Product[]; 
     }
   });
