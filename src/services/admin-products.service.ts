@@ -8,7 +8,7 @@ export const adminProductService = {
   createProduct: (data: any) => {
     return apiClient.post('/admin/products', data);
   },
-
+deleteProduct: (id: string) => apiClient.delete(`/admin/products/${id}`),
   updateVariant: async (variantId: string, stock: number, priceModifier: number) => {
     return apiClient.put(`/admin/products/variants/${variantId}`, {
       stock,
