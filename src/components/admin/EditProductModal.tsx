@@ -1,108 +1,225 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Loader2, Save } from 'lucide-react';
-import { adminProductService } from '@/services/admin-products.service';
-import { Product } from '@/types/types';
-import { useEffect } from 'react';
+import { useForm, useFieldArray } from "react-hook-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { X, Upload, Loader2, Save, Plus, Trash2, Layers } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
+import { useState, useEffect } from "react";
+import apiClient from "@/lib/api-client";
+import { adminProductService } from "@/services/admin-products.service";
 
 interface EditProductModalProps {
-  product: Product;
   isOpen: boolean;
   onClose: () => void;
+  product: any; 
 }
 
-export function EditProductModal({ product, isOpen, onClose }: EditProductModalProps) {
+export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalProps) => {
   const queryClient = useQueryClient();
-  
-  // Use 'values' to keep form in sync with the selected product
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const [images, setImages] = useState<string[]>([]);
+
+  // Fetch Categories & Stores for dropdowns
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await apiClient.get("/categories");
+      return res.data;
+    },
+  });
+
+  const { data: stores = [] } = useQuery({
+    queryKey: ["admin-stores"],
+    queryFn: async () => {
+      const res = await apiClient.get("/admin/stores");
+      return res.data;
+    },
+  });
+
+  // Setup Form with reactivity to 'product' prop
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
     values: {
-      name: product?.name || '',
-      description: product?.description || '',
-      price: product?.price || 0,
+      name: product?.name || "",
+      description: product?.description || "",
+      price: product?.price || "",
+      oldPrice: product?.oldPrice || "",
+      categoryId: product?.categoryId || "",
+      storeId: product?.storeId || "",
+      ingredients: product?.ingredients || "",
       isActive: product?.isActive ?? true,
+      // Mapping string arrays to objects for useFieldArray
+      careInstructions: product?.careInstructions?.map((v: string) => ({ value: v })) || [{ value: "" }],
+      deliveryInfo: product?.deliveryInfo?.map((v: string) => ({ value: v })) || [{ value: "" }],
+      attributes: product?.attributes || [{ name: "", value: "" }],
+      variants: product?.variants || [{ name: "", priceModifier: 0, stock: 10 }]
     }
   });
 
+  // Sync Images
+  useEffect(() => {
+    if (product?.images) setImages(product.images);
+  }, [product]);
+
+  // Field Arrays
+  const { fields: careFields, append: appendCare, remove: removeCare } = useFieldArray({ control, name: "careInstructions" as any });
+  const { fields: deliveryFields, append: appendDelivery, remove: removeDelivery } = useFieldArray({ control, name: "deliveryInfo" as any });
+  const { fields: attrFields, append: appendAttr, remove: removeAttr } = useFieldArray({ control, name: "attributes" as any });
+  const { fields: variantFields, append: appendVariant, remove: removeVariant } = useFieldArray({ control, name: "variants" as any });
+
   const mutation = useMutation({
-    mutationFn: (data: any) => adminProductService.updateProduct(product.id, data),
+    mutationFn: async (formData: any) => {
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price),
+        oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : null,
+        images: images,
+        careInstructions: formData.careInstructions.map((i: any) => i.value).filter(Boolean),
+        deliveryInfo: formData.deliveryInfo.map((i: any) => i.value).filter(Boolean),
+        attributes: formData.attributes.filter((a: any) => a.name && a.value),
+        variants: formData.variants.filter((v: any) => v.name).map((v: any) => ({
+          ...v,
+          priceModifier: parseFloat(v.priceModifier || 0),
+          stock: parseInt(v.stock || 0)
+        })),
+      };
+      return adminProductService.updateProduct(product.id, payload);
+    },
     onSuccess: () => {
-      // Refresh the list and close
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       onClose();
-    }
+    },
   });
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center p-6 border-b border-zinc-100">
-          <h2 className="text-xl font-bold text-zinc-800">Edit Product</h2>
-          <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
-            <X size={20} className="text-zinc-500" />
-          </button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+        
+        <div className="p-8 border-b flex justify-between items-center bg-zinc-50">
+          <div>
+            <h2 className="text-2xl font-black text-zinc-800 tracking-tight uppercase">Update Product</h2>
+            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest italic">{product?.slug}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-200 rounded-full transition-colors"><X size={28} /></button>
         </div>
 
-        {/* handleSubmit passes the CURRENT input values to the mutation */}
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Product Name</label>
-            <input 
-              {...register('name', { required: "Name is required" })} 
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-            />
-            {errors.name && <p className="text-rose-500 text-xs mt-1">{errors.name.message as string}</p>}
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Description</label>
-            <textarea 
-              {...register('description')} 
-              rows={3}
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Price (₹)</label>
-              <input 
-                type="number" 
-                {...register('price', { required: "Price is required", valueAsNumber: true })} 
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none transition-all"
-              />
+        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="p-8 space-y-10 overflow-y-auto">
+          
+          {/* STORE, CATEGORY & STATUS */}
+          <div className="grid grid-cols-3 gap-6 bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 items-end">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Store</label>
+              <select {...register("storeId")} className="w-full p-3 border rounded-2xl bg-white outline-none focus:ring-2 focus:ring-[#006044] font-bold">
+                {stores.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
             </div>
-            <div className="flex flex-col justify-end">
-              <label className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 cursor-pointer hover:bg-zinc-100 transition-colors">
-                <input type="checkbox" {...register('isActive')} className="w-5 h-5 accent-rose-500" />
-                <span className="text-sm font-semibold text-zinc-700">Active</span>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Category</label>
+              <select {...register("categoryId")} className="w-full p-3 border rounded-2xl bg-white outline-none focus:ring-2 focus:ring-[#006044] font-bold">
+                {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <label className="flex items-center gap-3 bg-white p-4 rounded-2xl border cursor-pointer">
+              <input type="checkbox" {...register("isActive")} className="w-5 h-5 accent-[#006044]" />
+              <span className="text-xs font-black text-zinc-600 uppercase">Active</span>
+            </label>
+          </div>
+
+          {/* BASIC INFO */}
+          <div className="grid grid-cols-2 gap-6">
+            <input {...register("name", { required: true })} placeholder="Product Name *" className="col-span-2 w-full p-4 border rounded-2xl font-black text-lg outline-none" />
+            <input {...register("price", { required: true })} type="number" placeholder="Price *" className="w-full p-4 border rounded-2xl font-black" />
+            <input {...register("oldPrice")} type="number" placeholder="MRP" className="w-full p-4 border rounded-2xl" />
+            <input {...register("ingredients")} placeholder="Ingredients Highlights" className="col-span-2 w-full p-4 border rounded-2xl" />
+          </div>
+
+          {/* VARIANTS */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                <Layers size={18} className="text-[#006044]" /> Product Variants
               </label>
+              <button type="button" onClick={() => appendVariant({ name: "", priceModifier: 0, stock: 10 })} className="text-[10px] font-black bg-zinc-100 px-4 py-2 rounded-full hover:bg-zinc-200">+ ADD VARIANT</button>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {variantFields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-4 gap-4 bg-zinc-50 p-4 rounded-3xl border border-zinc-100">
+                  <input {...register(`variants.${index}.name` as any)} placeholder="Name" className="p-3 border rounded-xl text-sm font-bold" />
+                  <input {...register(`variants.${index}.priceModifier` as any)} type="number" placeholder="Price +/-" className="p-3 border rounded-xl text-sm font-bold" />
+                  <input {...register(`variants.${index}.stock` as any)} type="number" placeholder="Stock" className="p-3 border rounded-xl text-sm" />
+                  <button type="button" onClick={() => removeVariant(index)} className="text-zinc-300 hover:text-rose-500 justify-self-center"><Trash2 size={20}/></button>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="flex-1 py-3 font-bold text-zinc-500 hover:bg-zinc-50 rounded-xl transition-all"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={mutation.isPending}
-              className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-200 transition-all disabled:opacity-70"
-            >
-              {mutation.isPending ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-              Save Changes
-            </button>
+          {/* SPECIFICATIONS */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Specifications</label>
+              <button type="button" onClick={() => appendAttr({ name: "", value: "" })} className="text-[10px] font-black bg-zinc-100 px-4 py-2 rounded-full">+ ADD SPEC</button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {attrFields.map((field, index) => (
+                <div key={field.id} className="flex gap-2 items-center bg-zinc-50 p-3 rounded-2xl border">
+                  <input {...register(`attributes.${index}.name` as any)} className="w-1/2 bg-transparent text-sm font-black uppercase tracking-tighter outline-none" />
+                  <input {...register(`attributes.${index}.value` as any)} className="w-1/2 bg-transparent text-sm font-bold border-l pl-3 outline-none" />
+                  <button type="button" onClick={() => removeAttr(index)} className="text-zinc-300 hover:text-rose-500"><Trash2 size={18}/></button>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* GALLERY */}
+          <div className="space-y-4">
+            <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Images</label>
+            <div className="flex gap-4 flex-wrap">
+              {images.map((url, i) => (
+                <div key={i} className="relative h-28 w-28 rounded-3xl overflow-hidden border shadow-sm group">
+                  <img src={url} className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                  <button type="button" onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-md"><X size={14}/></button>
+                </div>
+              ))}
+              <CldUploadWidget uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} onSuccess={(result: any) => setImages([...images, result.info.secure_url])}>
+                {({ open }) => (
+                  <button type="button" onClick={() => open()} className="h-28 w-28 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400 hover:border-[#006044] bg-zinc-50">
+                    <Upload size={24} />
+                    <span className="text-[10px] font-black mt-2 tracking-widest">ADD</span>
+                  </button>
+                )}
+              </CldUploadWidget>
+            </div>
+          </div>
+
+          {/* CARE & DELIVERY */}
+          <div className="grid grid-cols-2 gap-10">
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between">Care Instructions <Plus size={14} className="cursor-pointer text-green-600" onClick={() => appendCare({ value: "" })}/></label>
+              {careFields.map((field, index) => (
+                <div key={field.id} className="flex gap-2">
+                  <input {...register(`careInstructions.${index}.value` as any)} className="flex-1 p-3 border rounded-xl text-sm font-bold" />
+                  <button type="button" onClick={() => removeCare(index)} className="text-zinc-300"><X size={16}/></button>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between">Delivery Info <Plus size={14} className="cursor-pointer text-blue-600" onClick={() => appendDelivery({ value: "" })}/></label>
+              {deliveryFields.map((field, index) => (
+                <div key={field.id} className="flex gap-2">
+                  <input {...register(`deliveryInfo.${index}.value` as any)} className="flex-1 p-3 border rounded-xl text-sm font-bold" />
+                  <button type="button" onClick={() => removeDelivery(index)} className="text-zinc-300"><X size={16}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <textarea {...register("description")} placeholder="Description" rows={5} className="w-full p-5 border rounded-3xl outline-none text-zinc-600 font-medium" />
+
+          <button disabled={mutation.isPending} className="w-full bg-[#006044] text-white py-6 rounded-[32px] font-black text-xl shadow-2xl shadow-green-100 hover:bg-[#004d36] transition-all flex items-center justify-center gap-4">
+            {mutation.isPending ? <Loader2 className="animate-spin" /> : <><Save size={24}/> UPDATE PRODUCT DATA</>}
+          </button>
         </form>
       </div>
     </div>
   );
-}
+};

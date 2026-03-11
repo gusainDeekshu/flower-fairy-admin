@@ -17,7 +17,7 @@ export default function ProductsPage() {
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['admin-products'],
     queryFn: async () => {
-      const response = await apiClient.get('/products');
+      const response = await apiClient.get('/admin/products');
       return response as unknown as Product[];
     },
   });
@@ -61,7 +61,10 @@ export default function ProductsPage() {
             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               {/* EDIT BUTTON NOW FUNCTIONAL */}
               <button 
-                onClick={() => setEditingProduct(product)} 
+                onClick={() => {
+  console.log(product);
+  setEditingProduct(product);
+}} 
                 className="p-2 bg-white border border-zinc-100 rounded-lg text-zinc-400 hover:text-rose-500 shadow-sm transition-colors"
               >
                 <Edit3 size={16} />
