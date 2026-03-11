@@ -1,8 +1,24 @@
 # 🌸 Flower Fairy Admin Dashboard
 
-A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, **Shadcn UI**, and **TanStack Query**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory management, order tracking, and multi-tenant store administration.
+A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory management, order tracking, customer management, and multi-tenant store administration.
 
-The dashboard is designed with a scalable and modular architecture, enabling efficient data fetching, caching, and state synchronization through **TanStack Query**, while delivering a modern and responsive UI using **Shadcn UI** components.
+The dashboard is designed with a **scalable, modular, and type-safe architecture**, enabling efficient data fetching, caching, and state synchronization through **TanStack Query**, while delivering a modern, accessible, and responsive UI using **Shadcn UI** components.
+
+**Zod** is integrated for **schema validation and type-safe data handling**, ensuring robust validation of forms, API requests, and responses across the application. This improves reliability by enforcing consistent data structures and reducing runtime errors in both client and server interactions.
+
+Key architectural highlights include:
+
+* **Next.js 15 App Router** for optimized routing, server components, and performance.
+* **TypeScript-first development** for strong typing and maintainable code.
+* **TanStack Query** for advanced server-state management, caching, and background synchronization.
+* **Shadcn UI** for a clean, customizable, and accessible component system.
+* **Zod** for runtime schema validation, form validation, and API contract enforcement.
+* **Modular feature-based architecture** to support scalability and future expansion.
+* **Role-based administrative workflows** for secure store and user management.
+* **Responsive dashboard design** optimized for both desktop and tablet usage.
+
+The result is a **production-ready admin platform** capable of managing complex e-commerce operations while maintaining high performance, reliability, and developer experience.
+
 
 🔗 **[Live Demo](https://flower-fairy-admin.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy-admin)**
 
