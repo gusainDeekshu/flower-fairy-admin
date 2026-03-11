@@ -21,6 +21,7 @@ export const Sidebar = () => {
     { href: '/admin', icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { href: '/admin/orders', icon: <ShoppingBag size={20} />, label: "Orders" },
     { href: '/admin/products', icon: <Package size={20} />, label: "Products" },
+    { href: '/admin/categories', icon: <Package size={20} />, label: "Categories" },
   ];
 
   return (

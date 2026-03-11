@@ -17,7 +17,7 @@ export const AddProductModal = ({ isOpen, onClose }: { isOpen: boolean; onClose:
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const data = await apiClient.get("/categories");
+      const data = await apiClient.get("/admin/categories");
       return data || [];
     },
   });

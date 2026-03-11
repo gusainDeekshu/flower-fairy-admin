@@ -2,7 +2,12 @@
 import apiClient from '@/lib/api-client';
 
 export const adminService = {
-  // Orders API
+  
+  getStats: async () => {
+    // Ensure the result of the get request is returned
+    const data = await apiClient.get('/admin/stats');
+    return data ?? null; // Return null if data is somehow missing, never undefined
+  },
   getOrders: () => apiClient.get('/admin/orders'),
   updateOrderStatus: (id: string, status: string) => 
     apiClient.patch(`/admin/orders/${id}/status`, { status }),
