@@ -12,7 +12,16 @@ export interface Order {
 }
 
 
-export interface DashboardStat {
+// Define the structure of the data coming from adminService.getStats()
+export interface DashboardStats {
+  revenue: number;
+  orderCount: number;
+  userCount: number;
+  productCount: number;
+}
+
+// Define props for the StatCard component
+interface StatCardProps {
   label: string;
   value: string | number;
   icon: React.ReactNode;

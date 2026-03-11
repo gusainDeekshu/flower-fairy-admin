@@ -1,12 +1,12 @@
 // src/services/admin.service.ts
 import apiClient from '@/lib/api-client';
+import { DashboardStats } from '@/types/types';
 
 export const adminService = {
   
-  getStats: async () => {
-    // Ensure the result of the get request is returned
-    const data = await apiClient.get('/admin/stats');
-    return data ?? null; // Return null if data is somehow missing, never undefined
+  getStats: async (): Promise<DashboardStats> => {
+    // apiClient already returns response.data due to interceptor
+    return apiClient.get<DashboardStats>('/admin/stats') as unknown as Promise<DashboardStats>;
   },
   getOrders: () => apiClient.get('/admin/orders'),
   updateOrderStatus: (id: string, status: string) => 
