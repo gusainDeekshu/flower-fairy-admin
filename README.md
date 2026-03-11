@@ -2,7 +2,7 @@
 
 A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, **Shadcn UI**, and **TanStack Query**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory management, order tracking, and multi-tenant store administration.
 
-
+The dashboard is designed with a scalable and modular architecture, enabling efficient data fetching, caching, and state synchronization through **TanStack Query**, while delivering a modern and responsive UI using **Shadcn UI** components.
 
 🔗 **[Live Demo](https://flower-fairy-admin.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy-admin)**
 
