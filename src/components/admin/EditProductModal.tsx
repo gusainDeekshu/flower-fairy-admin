@@ -11,7 +11,7 @@ import { adminProductService } from "@/services/admin-products.service";
 interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: any; 
+  product: any;
 }
 
 export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalProps) => {
@@ -46,7 +46,6 @@ export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalP
       storeId: product?.storeId || "",
       ingredients: product?.ingredients || "",
       isActive: product?.isActive ?? true,
-      // Mapping string arrays to objects for useFieldArray
       careInstructions: product?.careInstructions?.map((v: string) => ({ value: v })) || [{ value: "" }],
       deliveryInfo: product?.deliveryInfo?.map((v: string) => ({ value: v })) || [{ value: "" }],
       attributes: product?.attributes || [{ name: "", value: "" }],
@@ -54,9 +53,11 @@ export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalP
     }
   });
 
-  // Sync Images
+  // Sync Images when product changes
   useEffect(() => {
-    if (product?.images) setImages(product.images);
+    if (product?.images) {
+      setImages(product.images);
+    }
   }, [product]);
 
   // Field Arrays
@@ -95,6 +96,7 @@ export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalP
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
         
+        {/* HEADER */}
         <div className="p-8 border-b flex justify-between items-center bg-zinc-50">
           <div>
             <h2 className="text-2xl font-black text-zinc-800 tracking-tight uppercase">Update Product</h2>
@@ -170,21 +172,41 @@ export const EditProductModal = ({ isOpen, onClose, product }: EditProductModalP
             </div>
           </div>
 
-          {/* GALLERY */}
+          {/* MULTIPLE IMAGES GALLERY */}
           <div className="space-y-4">
-            <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Images</label>
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Gallery ({images.length} images)</label>
+              {images.length > 0 && (
+                <button type="button" onClick={() => setImages([])} className="text-[10px] font-bold text-rose-500 hover:underline">CLEAR ALL</button>
+              )}
+            </div>
             <div className="flex gap-4 flex-wrap">
               {images.map((url, i) => (
-                <div key={i} className="relative h-28 w-28 rounded-3xl overflow-hidden border shadow-sm group">
-                  <img src={url} className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
-                  <button type="button" onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-md"><X size={14}/></button>
+                <div key={i} className="relative h-28 w-28 rounded-3xl overflow-hidden border shadow-sm group bg-zinc-100">
+                  <img src={url} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button type="button" onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="bg-white text-rose-500 rounded-full p-2 shadow-xl hover:scale-110 transition-transform">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  {i === 0 && (
+                    <span className="absolute bottom-2 left-2 bg-[#006044] text-white text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Main</span>
+                  )}
                 </div>
               ))}
-              <CldUploadWidget uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} onSuccess={(result: any) => setImages([...images, result.info.secure_url])}>
+              <CldUploadWidget 
+                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} 
+                options={{ multiple: true }}
+                onSuccess={(result: any) => {
+                  if (result.event === "success") {
+                    setImages((prev) => [...prev, result.info.secure_url]);
+                  }
+                }}
+              >
                 {({ open }) => (
-                  <button type="button" onClick={() => open()} className="h-28 w-28 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400 hover:border-[#006044] bg-zinc-50">
+                  <button type="button" onClick={() => open()} className="h-28 w-28 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400 hover:border-[#006044] bg-zinc-50 transition-colors">
                     <Upload size={24} />
-                    <span className="text-[10px] font-black mt-2 tracking-widest">ADD</span>
+                    <span className="text-[10px] font-black mt-2 tracking-widest uppercase">Add</span>
                   </button>
                 )}
               </CldUploadWidget>

@@ -197,11 +197,19 @@ export const AddProductModal = ({ isOpen, onClose }: { isOpen: boolean; onClose:
                   <button type="button" onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-md hover:text-red-500 transition-colors"><X size={14}/></button>
                 </div>
               ))}
-              <CldUploadWidget uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} onSuccess={(result: any) => setImages([...images, result.info.secure_url])}>
+              <CldUploadWidget 
+                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} 
+                options={{ multiple: true }}
+                onSuccess={(result: any) => {
+                  if (result.event === "success") {
+                    setImages((prev) => [...prev, result.info.secure_url]);
+                  }
+                }}
+              >
                 {({ open }) => (
-                  <button type="button" onClick={() => open()} className="h-28 w-28 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400 hover:border-[#006044] hover:text-[#006044] transition-all bg-zinc-50">
+                  <button type="button" onClick={() => open()} className="h-28 w-28 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400 hover:border-[#006044] bg-zinc-50 transition-colors">
                     <Upload size={24} />
-                    <span className="text-[10px] font-black mt-2">UPLOAD</span>
+                    <span className="text-[10px] font-black mt-2 tracking-widest uppercase">Add</span>
                   </button>
                 )}
               </CldUploadWidget>
