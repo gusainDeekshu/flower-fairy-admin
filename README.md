@@ -1,6 +1,8 @@
 # 🌸 Flower Fairy Admin Dashboard
 
-A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, and **Shadcn UI**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory, order tracking, and multi-tenant store management.
+A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, **Shadcn UI**, and **TanStack Query**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory management, order tracking, and multi-tenant store administration.
+
+
 
 🔗 **[Live Demo](https://flower-fairy-admin.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy-admin)**
 
