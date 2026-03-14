@@ -31,26 +31,28 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }: any) {
-      if (account?.provider === "google") {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-admin?email=${user.email}`);
-          const data = await res.json();
+   // ... inside callbacks
+async signIn({ user, account }: any) {
+  if (account?.provider === "google") {
+    try {
+      // This is a server-side fetch. 
+      // Ensure your Backend check-admin endpoint is publicly reachable 
+      // OR secured with a private API KEY header.
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/check-admin?email=${user.email}`);
+      const data = await res.json();
 
-          if (data.isAdmin && data.accessToken) {
-            // Pass the BACKEND token to the user object for the jwt() callback
-            user.accessToken = data.accessToken;
-            user.role = "ADMIN";
-            return true;
-          }
-          return false; // Not an admin in our DB
-        } catch (error) {
-          console.error("Auth Handshake Failed:", error);
-          return false;
-        }
+      if (data.isAdmin && data.accessToken) {
+        user.accessToken = data.accessToken;
+        user.role = "ADMIN";
+        return true;
       }
-      return true;
-    },
+      return false; 
+    } catch (error) {
+      return false;
+    }
+  }
+  return true;
+},
     async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
