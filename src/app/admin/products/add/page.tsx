@@ -1,4 +1,3 @@
-// src\app\admin\products\add\page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -57,12 +56,12 @@ export default function AddProductPage() {
         safetyInfo: "",
         directions: "",
         legalDisclaimer: "",
-        aPlusContent: [] as any[]
+        aPlusContent: [] as any[] // Handles the dynamic A+ blocks
       }
     }
   });
 
-  const { register, control, handleSubmit, watch } = methods;
+  const { register, control, handleSubmit } = methods;
 
   // Dynamic Field Arrays
   const { fields: careFields, append: appendCare, remove: removeCare } = useFieldArray({ control, name: "careInstructions" as any });
@@ -219,7 +218,7 @@ export default function AddProductPage() {
                 </label>
               </div>
 
-              {/* SECTION: COMPLIANCE */}
+              {/* SECTION: COMPLIANCE & EXTRA INFO */}
               <div className="bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 space-y-4">
                 <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                   <ShieldAlert size={18} className="text-[#006044]" /> Extra Details
@@ -238,8 +237,16 @@ export default function AddProductPage() {
                     <textarea {...register("ingredients")} rows={2} className="w-full p-3 border rounded-xl outline-none text-sm font-medium bg-white focus:ring-2 focus:ring-[#006044]" />
                   </div>
                   <div className="space-y-1">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Directions to Use</label>
+                    <textarea {...register("extra.directions")} rows={2} className="w-full p-3 border rounded-xl outline-none text-sm font-medium bg-white focus:ring-2 focus:ring-[#006044]" />
+                  </div>
+                  <div className="space-y-1">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Safety Info</label>
                     <textarea {...register("extra.safetyInfo")} rows={2} className="w-full p-3 border rounded-xl outline-none text-sm font-medium bg-white focus:ring-2 focus:ring-[#006044]" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Legal Disclaimer</label>
+                    <textarea {...register("extra.legalDisclaimer")} rows={2} className="w-full p-3 border rounded-xl outline-none text-sm font-medium bg-white focus:ring-2 focus:ring-[#006044]" />
                   </div>
                 </div>
               </div>
