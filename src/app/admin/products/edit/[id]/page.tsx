@@ -1,4 +1,3 @@
-// src/app/admin/products/edit/[id]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,12 +14,14 @@ import {
   Trash2,
   Layers,
   ShieldAlert,
+  Sparkles, // <-- Imported Sparkles for Highlights section
 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 
 import apiClient from "@/lib/api-client";
 import { adminProductService } from "@/services/admin-products.service";
 import APlusContentBuilder from "@/components/admin/APlusContentBuilder";
+import ProductHighlightsSelector from "@/components/admin/products/ProductHighlightsSelector"; // <-- Imported our Selector
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -28,6 +29,17 @@ export default function EditProductPage() {
   const queryClient = useQueryClient();
   const [images, setImages] = useState<string[]>([]);
 
+ const { data: existingHighlights } = useQuery({
+    queryKey: ["product-highlights-edit", id],
+    queryFn: async () => {
+      const res = await apiClient.get(`/products/${id}/highlights`);
+      // Fix: If apiClient returns the array directly, use it. Otherwise fallback to res.data
+      const data = Array.isArray(res) ? res : res?.data || [];
+      console.log("Fetched existing highlights for product:", data);
+      return data;
+    },
+    enabled: !!id,
+  });
   // --- DYNAMIC DATA FETCHING ---
   const { data: categories = [] } = useQuery({
     queryKey: ["admin-categories"],
@@ -39,7 +51,7 @@ export default function EditProductPage() {
     queryFn: async () => (await apiClient.get("/admin/stores")) || [],
   });
 
-  // Fetch Product (Using getAll and filtering since the provided controller only has @Get())
+  // Fetch Product
   const { data: product, isLoading: isProductLoading } = useQuery({
     queryKey: ["admin-product", id],
     queryFn: async () => {
@@ -53,7 +65,6 @@ export default function EditProductPage() {
   });
 
   // --- FORM SETUP WITH PRE-FILL ---
-  // We use the `values` prop which natively reacts to async data loading in RHF v7+
   const methods = useForm({
     values: product
       ? {
@@ -65,6 +76,8 @@ export default function EditProductPage() {
           storeId: product.storeId || "",
           ingredients: product.extra?.ingredients || product.ingredients || "",
           isActive: product.isActive ?? true,
+          // 🔥 Extract existing highlight IDs from the relational array
+          highlightIds: existingHighlights?.map((h: any) => h.id) || [],
           careInstructions: product.careInstructions?.length
             ? product.careInstructions.map((v: string) => ({ value: v }))
             : [{ value: "" }],
@@ -83,14 +96,13 @@ export default function EditProductPage() {
             safetyInfo: product.extra?.safetyInfo || "",
             directions: product.extra?.directions || "",
             legalDisclaimer: product.extra?.legalDisclaimer || "",
-            // 🔥 CRITICAL: Pre-fill A+ Content blocks seamlessly
             aPlusContent: product.extra?.aPlusContent || [],
           },
         }
       : undefined,
   });
 
-  const { register, control, handleSubmit } = methods;
+  const { register, control, handleSubmit, watch, setValue } = methods;
 
   // Dynamic Field Arrays
   const {
@@ -132,28 +144,23 @@ export default function EditProductPage() {
         price: parseFloat(formData.price),
         oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : null,
         images: images,
+        highlightIds: formData.highlightIds || [], // 🔥 Send updated highlights array
         careInstructions: formData.careInstructions
           .map((i: any) => i.value)
           .filter(Boolean),
         deliveryInfo: formData.deliveryInfo
           .map((i: any) => i.value)
           .filter(Boolean),
-        // 🔥 FIX 1: Explicitly map 'name' and 'value', dropping 'id' and 'productId'
         attributes: formData.attributes
           .filter((a: any) => a.name && a.value)
-          .map((a: any) => ({
-            name: a.name,
-            value: a.value,
-          })),
-       // 🔥 FIX 2: Do NOT use ...v (spread operator). Explicitly map the 3 allowed fields.
+          .map((a: any) => ({ name: a.name, value: a.value })),
         variants: formData.variants
           .filter((v: any) => v.name)
           .map((v: any) => ({
             name: v.name,
             priceModifier: parseFloat(v.priceModifier || 0),
-            stock: parseInt(v.stock || 0)
+            stock: parseInt(v.stock || 0),
           })),
-        // Note: Omitting `slug` to prevent breaking existing SEO/Links on edit
       };
 
       return adminProductService.updateProduct(id, payload);
@@ -328,7 +335,25 @@ export default function EditProductPage() {
                 </div>
               </div>
 
-              {/* ✅ MODULAR A+ CONTENT BUILDER (Auto-populates via values) */}
+
+              {/* ✅ NEW SECTION: PRODUCT HIGHLIGHTS */}
+              <div className="bg-zinc-50 p-8 rounded-[40px] border border-zinc-100 space-y-4">
+
+                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles size={18} className="text-[#006044]" /> Service
+                  Highlights
+                </label>
+                <div className="bg-white p-4 rounded-2xl border border-zinc-100">
+                  <ProductHighlightsSelector
+                    selectedIds={watch("highlightIds") || []}
+                    onChange={(ids: string[]) =>
+                      setValue("highlightIds", ids, { shouldDirty: true })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* A+ CONTENT BUILDER */}
               <APlusContentBuilder />
             </div>
 
@@ -382,7 +407,23 @@ export default function EditProductPage() {
                 </label>
               </div>
 
-              {/* SECTION: COMPLIANCE */}
+              {/* ✅ NEW SECTION: PRODUCT HIGHLIGHTS */}
+              {/* <div className="bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 space-y-4">
+                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles size={18} className="text-[#006044]" /> Service
+                  Highlights
+                </label>
+                <div className="bg-white p-4 rounded-2xl border border-zinc-100">
+                  <ProductHighlightsSelector
+                    selectedIds={watch("highlightIds") || []}
+                    onChange={(ids: string[]) =>
+                      setValue("highlightIds", ids, { shouldDirty: true })
+                    }
+                  />
+                </div>
+              </div> */}
+
+              {/* SECTION: COMPLIANCE & EXTRA INFO */}
               <div className="bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 space-y-4">
                 <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                   <ShieldAlert size={18} className="text-[#006044]" /> Extra
@@ -517,6 +558,68 @@ export default function EditProductPage() {
                         className="p-2 text-zinc-300 hover:text-rose-500"
                       >
                         <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CARE & DELIVERY */}
+              <div className="bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 space-y-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between items-center">
+                    Care Rules{" "}
+                    <Plus
+                      size={14}
+                      className="cursor-pointer text-green-600 bg-green-100 rounded-full p-0.5"
+                      onClick={() => appendCare({ value: "" })}
+                    />
+                  </label>
+                  {careFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex gap-2 bg-white border rounded-xl p-1 pr-2 items-center"
+                    >
+                      <input
+                        {...register(`careInstructions.${index}.value` as any)}
+                        placeholder="e.g. Keep dry"
+                        className="flex-1 p-2 outline-none text-xs font-bold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCare(index)}
+                        className="text-zinc-300 hover:text-rose-500"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between items-center">
+                    Delivery Rules{" "}
+                    <Plus
+                      size={14}
+                      className="cursor-pointer text-blue-600 bg-blue-100 rounded-full p-0.5"
+                      onClick={() => appendDelivery({ value: "" })}
+                    />
+                  </label>
+                  {deliveryFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex gap-2 bg-white border rounded-xl p-1 pr-2 items-center"
+                    >
+                      <input
+                        {...register(`deliveryInfo.${index}.value` as any)}
+                        placeholder="e.g. Free shipping"
+                        className="flex-1 p-2 outline-none text-xs font-bold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeDelivery(index)}
+                        className="text-zinc-300 hover:text-rose-500"
+                      >
+                        <X size={14} />
                       </button>
                     </div>
                   ))}

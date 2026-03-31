@@ -5,13 +5,15 @@ import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
-  Save, ArrowLeft, Loader2, Upload, X, Plus, Trash2, Layers, ShieldAlert 
+  Save, ArrowLeft, Loader2, Upload, X, Plus, Trash2, Layers, ShieldAlert, Sparkles 
 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 
 import apiClient from "@/lib/api-client";
 import { adminProductService } from "@/services/admin-products.service";
 import APlusContentBuilder from "@/components/admin/APlusContentBuilder";
+// Import the new selector we built
+import ProductHighlightsSelector from "@/components/admin/products/ProductHighlightsSelector"; 
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -46,6 +48,7 @@ export default function AddProductPage() {
       storeId: "",
       ingredients: "",
       isActive: true,
+      highlightIds: [] as string[], // <-- NEW: Added to track selected highlights
       careInstructions: [{ value: "" }],
       deliveryInfo: [{ value: "" }],
       attributes: [{ name: "", value: "" }],
@@ -56,12 +59,12 @@ export default function AddProductPage() {
         safetyInfo: "",
         directions: "",
         legalDisclaimer: "",
-        aPlusContent: [] as any[] // Handles the dynamic A+ blocks
+        aPlusContent: [] as any[] 
       }
     }
   });
 
-  const { register, control, handleSubmit } = methods;
+  const { register, control, handleSubmit, watch, setValue } = methods;
 
   // Dynamic Field Arrays
   const { fields: careFields, append: appendCare, remove: removeCare } = useFieldArray({ control, name: "careInstructions" as any });
@@ -79,6 +82,7 @@ export default function AddProductPage() {
         price: parseFloat(formData.price),
         oldPrice: formData.oldPrice ? parseFloat(formData.oldPrice) : null,
         images: images,
+        highlightIds: formData.highlightIds || [], // <-- NEW: Pass to backend
         careInstructions: formData.careInstructions.map((i: any) => i.value).filter(Boolean),
         deliveryInfo: formData.deliveryInfo.map((i: any) => i.value).filter(Boolean),
         attributes: formData.attributes.filter((a: any) => a.name && a.value),
@@ -188,7 +192,7 @@ export default function AddProductPage() {
                 </div>
               </div>
 
-              {/* ✅ THE MODULAR A+ CONTENT BUILDER */}
+              {/* A+ CONTENT BUILDER */}
               <APlusContentBuilder />
 
             </div>
@@ -216,6 +220,20 @@ export default function AddProductPage() {
                   <input type="checkbox" {...register("isActive")} className="w-5 h-5 accent-[#006044]" />
                   <span className="text-xs font-black text-zinc-600 uppercase tracking-tight">Set Product Live</span>
                 </label>
+              </div>
+
+              {/* ✅ NEW SECTION: PRODUCT HIGHLIGHTS */}
+              <div className="bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 space-y-4">
+                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles size={18} className="text-[#006044]" /> Service Highlights
+                </label>
+                <div className="bg-white p-4 rounded-2xl border border-zinc-100">
+                  {/* Render the modular selector here */}
+                  <ProductHighlightsSelector 
+                    selectedIds={watch('highlightIds')} 
+                    onChange={(ids: string[]) => setValue('highlightIds', ids)} 
+                  />
+                </div>
               </div>
 
               {/* SECTION: COMPLIANCE & EXTRA INFO */}

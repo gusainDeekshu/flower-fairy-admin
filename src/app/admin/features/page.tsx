@@ -2,13 +2,33 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as LucideIcons from 'lucide-react';
 import { Sparkles, Edit2, Trash2, ArrowUp, ArrowDown, Plus, Loader2, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import apiClient from '@/lib/api-client';
 
+// --- SMART ICON RESOLVER (Same as Storefront) ---
+const DynamicIcon = ({ name, color, size = 20 }: { name: string; color?: string; size?: number }) => {
+  if (!name) return <LucideIcons.CheckCircle size={size} color={color || "currentColor"} />;
+
+  let IconComponent = (LucideIcons as any)[name];
+
+  if (!IconComponent) {
+    const pascalCaseName = name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('');
+    IconComponent = (LucideIcons as any)[pascalCaseName];
+  }
+
+  IconComponent = IconComponent || LucideIcons.CheckCircle;
+  return <IconComponent size={size} color={color || "currentColor"} />;
+};
+
 export default function FeaturesManagerPage() {
   const queryClient = useQueryClient();
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingFeature, setEditingFeature] = useState<any>(null); // Tracks if we are editing
 
   // --- FETCH FEATURES ---
   const { data: features = [], isLoading } = useQuery({
@@ -16,11 +36,10 @@ export default function FeaturesManagerPage() {
     queryFn: async () => {
       try {
         const response = await apiClient.get('/admin/features');
-        // Fallback to an empty array if the response is completely empty/undefined
-        return response ?? []; 
+        return Array.isArray(response) ? response : response?.data || []; 
       } catch (error) {
         console.error("Failed to fetch features:", error);
-        return []; // Return empty array on error so React Query doesn't crash
+        return []; 
       }
     }, 
   });
@@ -34,7 +53,6 @@ export default function FeaturesManagerPage() {
       await queryClient.cancelQueries({ queryKey: ['admin-features'] });
       const previousFeatures = queryClient.getQueryData(['admin-features']);
       
-      // Optimistically update the cache
       queryClient.setQueryData(['admin-features'], (old: any[]) => {
         const updated = [...old];
         newOrder.forEach(update => {
@@ -43,7 +61,6 @@ export default function FeaturesManagerPage() {
         });
         return updated.sort((a, b) => a.order - b.order);
       });
-      
       return { previousFeatures };
     },
     onError: (err, newOrder, context) => {
@@ -51,11 +68,9 @@ export default function FeaturesManagerPage() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-features'] });
-      queryClient.invalidateQueries({ queryKey: ['active-features'] }); // Invalidate public store UI
     },
   });
 
-  // --- MOVE UP / DOWN LOGIC ---
   const moveFeature = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return;
     if (direction === 'down' && index === features.length - 1) return;
@@ -63,12 +78,10 @@ export default function FeaturesManagerPage() {
     const newFeatures = [...features];
     const swapIndex = direction === 'up' ? index - 1 : index + 1;
 
-    // Swap their 'order' values
     const tempOrder = newFeatures[index].order;
     newFeatures[index].order = newFeatures[swapIndex].order;
     newFeatures[swapIndex].order = tempOrder;
 
-    // Fire mutation with just the two updated items
     reorderMutation.mutate([
       { id: newFeatures[index].id, order: newFeatures[index].order },
       { id: newFeatures[swapIndex].id, order: newFeatures[swapIndex].order }
@@ -80,9 +93,18 @@ export default function FeaturesManagerPage() {
     mutationFn: (id: string) => apiClient.delete(`/admin/features/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-features'] });
-      queryClient.invalidateQueries({ queryKey: ['active-features'] });
     }
   });
+
+  const openAddModal = () => {
+    setEditingFeature(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (feature: any) => {
+    setEditingFeature(feature);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -99,7 +121,7 @@ export default function FeaturesManagerPage() {
           </div>
         </div>
         <button 
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={openAddModal}
           className="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-colors shadow-md"
         >
           <Plus size={18} /> Add Highlight
@@ -124,15 +146,22 @@ export default function FeaturesManagerPage() {
                     <button onClick={() => moveFeature(index, 'down')} disabled={index === features.length - 1} className="hover:text-zinc-600 disabled:opacity-30"><ArrowDown size={16}/></button>
                   </div>
                   
-                  <div className="w-12 h-12 bg-zinc-100 rounded-2xl flex items-center justify-center text-zinc-600 shadow-inner text-sm font-bold">
-                    {/* Render actual icon dynamically later, showing string name for now */}
-                    {feature.icon.substring(0,2).toUpperCase()}
+                  {/* DYNAMIC ICON WITH COLOR */}
+                  <div 
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
+                    style={{ backgroundColor: `${feature.color || '#16a34a'}20` }} // 20% opacity background
+                  >
+                    <DynamicIcon name={feature.icon} color={feature.color || '#16a34a'} size={24} />
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-zinc-800 text-lg">{feature.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs font-mono bg-zinc-100 px-2 py-0.5 rounded text-zinc-500">Lucide: {feature.icon}</span>
+                      <span className="text-xs font-mono bg-zinc-100 px-2 py-0.5 rounded text-zinc-500 flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: feature.color || '#16a34a' }} />
+                        {feature.color || '#16a34a'}
+                      </span>
                       <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${feature.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {feature.isActive ? 'Active' : 'Hidden'}
                       </span>
@@ -142,11 +171,14 @@ export default function FeaturesManagerPage() {
 
                 {/* Right: Actions */}
                 <div className="flex gap-2">
-                  <button className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                  <button 
+                    onClick={() => openEditModal(feature)}
+                    className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                  >
                     <Edit2 size={18} />
                   </button>
                   <button 
-                    onClick={() => { if(confirm('Remove this feature?')) deleteMutation.mutate(feature.id) }}
+                    onClick={() => { if(confirm('Remove this feature globally?')) deleteMutation.mutate(feature.id) }}
                     className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
                   >
                     <Trash2 size={18} />
@@ -158,24 +190,50 @@ export default function FeaturesManagerPage() {
         )}
       </div>
 
-      {/* QUICK ADD MODAL */}
-      {isAddModalOpen && (
-        <AddFeatureModal onClose={() => setIsAddModalOpen(false)} />
+      {/* UNIFIED ADD/EDIT MODAL */}
+      {isModalOpen && (
+        <FeatureModal 
+          editData={editingFeature} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       )}
     </div>
   );
 }
 
-// --- SUB-COMPONENT: ADD MODAL ---
-function AddFeatureModal({ onClose }: { onClose: () => void }) {
+// --- SUB-COMPONENT: UNIFIED MODAL ---
+function FeatureModal({ editData, onClose }: { editData?: any, onClose: () => void }) {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset } = useForm();
+  const isEditing = !!editData;
 
-  const createMutation = useMutation({
-    mutationFn: (data: any) => apiClient.post('/admin/features', data),
+  // React Hook Form pre-filled with editData if it exists
+  const { register, handleSubmit, watch,setValue } = useForm({
+    values: isEditing ? {
+      title: editData.title,
+      icon: editData.icon,
+      color: editData.color || '#16a34a',
+      isActive: editData.isActive
+    } : {
+      title: "",
+      icon: "",
+      color: "#16a34a",
+      isActive: true
+    }
+  });
+
+  const selectedColor = watch("color") || "#16a34a";
+  const selectedIcon = watch("icon") || "CheckCircle";
+
+  const mutation = useMutation({
+    mutationFn: (data: any) => {
+      // If editing, use PATCH. If new, use POST.
+      if (isEditing) {
+        return apiClient.patch(`/admin/features/${editData.id}`, data);
+      }
+      return apiClient.post('/admin/features', data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-features'] });
-      reset();
       onClose();
     }
   });
@@ -184,30 +242,73 @@ function AddFeatureModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-6 border-b flex justify-between items-center bg-zinc-50">
-          <h2 className="text-lg font-black text-zinc-800 uppercase tracking-tight">New Highlight</h2>
+          <h2 className="text-lg font-black text-zinc-800 uppercase tracking-tight">
+            {isEditing ? "Edit Highlight" : "New Highlight"}
+          </h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-200 rounded-full transition-colors"><X size={20} /></button>
         </div>
         
-        <form onSubmit={handleSubmit((data) => createMutation.mutate({ ...data, isActive: true }))} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="p-6 space-y-5">
+          
+          {/* Live Preview Bubble */}
+          <div className="flex items-center justify-center py-4">
+            <div className="flex flex-col items-center space-y-2">
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center shadow-sm transition-colors duration-300"
+                style={{ backgroundColor: `${selectedColor}20` }} // 20% opacity hex
+              >
+                <DynamicIcon name={selectedIcon} color={selectedColor} size={28} />
+              </div>
+              <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Preview</span>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Display Title</label>
-            <input {...register("title", { required: true })} placeholder="e.g. 100% Organic" className="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-rose-500 outline-none font-bold text-sm" />
+            <input {...register("title", { required: true })} placeholder="e.g. 100% Organic" className="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-[#006044] outline-none font-bold text-sm bg-white" />
           </div>
           
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between">
-              Lucide Icon Name 
-              <a href="https://lucide.dev/icons" target="_blank" className="text-blue-500 hover:underline">Find Icons &rarr;</a>
-            </label>
-            <input {...register("icon", { required: true })} placeholder="e.g. Leaf, Truck, ShieldCheck" className="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-rose-500 outline-none font-bold text-sm" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex justify-between">
+                Lucide Icon 
+                <a href="https://lucide.dev/icons" target="_blank" className="text-blue-500 hover:underline">Find &rarr;</a>
+              </label>
+              <input {...register("icon", { required: true })} placeholder="e.g. Truck" className="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-[#006044] outline-none font-bold text-sm bg-white" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Brand Color</label>
+              <div className="flex gap-2 items-center">
+                <input 
+                  type="color" 
+                  value={selectedColor}
+                  onChange={(e) => setValue("color", e.target.value, { shouldDirty: true })}
+                  className="w-12 h-12 p-1 border rounded-2xl cursor-pointer bg-white" 
+                />
+                <input 
+                  type="text"
+                  value={selectedColor}
+                  onChange={(e) => setValue("color", e.target.value, { shouldDirty: true })}
+                  placeholder="#HEX" 
+                  className="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-[#006044] outline-none font-bold text-sm bg-white uppercase" 
+                />
+              </div>
+            </div>
           </div>
+
+          <label className="flex items-center gap-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-100 cursor-pointer mt-2">
+            <input type="checkbox" {...register("isActive")} className="w-5 h-5 accent-[#006044]" />
+            <span className="text-xs font-black text-zinc-600 uppercase tracking-tight">Active (Visible on Storefront)</span>
+          </label>
 
           <button 
             type="submit" 
-            disabled={createMutation.isPending} 
-            className="w-full bg-zinc-900 text-white py-4 rounded-2xl font-bold mt-4 hover:bg-zinc-800 disabled:opacity-50 transition-colors flex justify-center"
+            disabled={mutation.isPending} 
+            className="w-full bg-[#006044] text-white py-4 rounded-2xl font-bold mt-4 hover:bg-[#004d36] disabled:opacity-50 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-green-100"
           >
-            {createMutation.isPending ? <Loader2 className="animate-spin" /> : 'Save Feature'}
+            {mutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <LucideIcons.Save size={18} />}
+            {isEditing ? 'Save Changes' : 'Create Highlight'}
           </button>
         </form>
       </div>
