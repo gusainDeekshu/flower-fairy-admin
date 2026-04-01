@@ -1,4 +1,4 @@
-# 🌸 AE Naturals Admin Dashboard
+# 🌸 Flower Fairy Admin Dashboard
 
 The **AE Naturals Admin Dashboard** is a scalable, enterprise-level administrative platform designed to manage modern e-commerce operations efficiently. Built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**, the dashboard provides a centralized control panel for administrators to manage products, orders, customers, and multi-store configurations.
 
@@ -280,10 +280,9 @@ These components follow a **feature-based structure** for scalability.
 
 Custom hooks abstract complex logic such as:
 
-Fetching products
-Fetching orders
-Handling mutations
-Managing admin actions
+* **Node.js** (v20+ recommended)
+* **npm** or **pnpm**
+* Access to a running [Flower Fairy Backend](https://www.google.com/search?q=https://github.com/gusainDeekshu/flower-fairy-backend)
 
 This keeps components clean and maintainable.
 
