@@ -1,41 +1,40 @@
 import React from 'react';
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useController } from "react-hook-form";
 import { Trash2 } from 'lucide-react';
 import CloudinaryUpload from '../shared/CloudinaryUpload';
 
 export default function ImageGridBlockForm({ index }: { index: number }) {
-  const { register, watch, setValue, getValues } = useFormContext();
-  
+  const { register, control } = useFormContext();
   const basePath = `extra.aPlusContent.${index}.content`;
-  const blockContent = watch(basePath) || {};
-  const currentImages = blockContent.images || [];
+
+  // 🔥 PRODUCTION-GRADE: useController binds this custom UI directly to RHF's engine
+  const { 
+    field: { value, onChange } 
+  } = useController({
+    name: `${basePath}.images`,
+    control,
+    defaultValue: [], // Guarantees RHF initializes this path as an array
+  });
+
+  // Ensure it's always an array to prevent mapping errors
+  const currentImages = Array.isArray(value) ? value : [];
 
   const handleUpload = (url: string) => {
-    const latestContent = getValues(basePath) || {};
-    const latestImages = latestContent.images || [];
-    
-    setValue(
-      basePath, 
-      { ...latestContent, images: [...latestImages, url] }, 
-      { shouldDirty: true, shouldTouch: true, shouldValidate: true }
-    );
+    // 100% reliable state update. RHF will immediately re-render the UI.
+    onChange([...currentImages, url]);
   };
 
   const handleDelete = (idxToDelete: number) => {
-    const latestContent = getValues(basePath) || {};
-    const latestImages = latestContent.images || [];
-    
-    setValue(
-      basePath, 
-      { ...latestContent, images: latestImages.filter((_: any, i: number) => i !== idxToDelete) },
-      { shouldDirty: true, shouldTouch: true, shouldValidate: true }
-    );
+    // Standard array filtering hooked directly into RHF
+    onChange(currentImages.filter((_, i) => i !== idxToDelete));
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Grid Title (Optional)</label>
+        <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+          Grid Title (Optional)
+        </label>
         <input 
           {...register(`${basePath}.title`)} 
           className="w-full px-4 py-3 border rounded-2xl text-sm outline-none focus:ring-2 focus:ring-[#006044] bg-white font-medium" 
@@ -44,7 +43,9 @@ export default function ImageGridBlockForm({ index }: { index: number }) {
       </div>
       <div>
         <div className="flex justify-between items-center mb-3">
-          <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest">Grid Images</label>
+          <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+            Grid Images
+          </label>
           <CloudinaryUpload 
             multiple 
             buttonText="ADD IMAGES"
