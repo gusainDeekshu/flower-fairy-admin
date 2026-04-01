@@ -1,123 +1,512 @@
 # 🌸 AE Naturals Admin Dashboard
 
-A comprehensive, enterprise-grade administrative dashboard built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**. This application provides store owners and administrators with full control over their e-commerce operations, including product inventory management, order tracking, customer management, and multi-tenant store administration.
+The **AE Naturals Admin Dashboard** is a scalable, enterprise-level administrative platform designed to manage modern e-commerce operations efficiently. Built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**, the dashboard provides a centralized control panel for administrators to manage products, orders, customers, and multi-store configurations.
 
-The dashboard is designed with a **scalable, modular, and type-safe architecture**, enabling efficient data fetching, caching, and state synchronization through **TanStack Query**, while delivering a modern, accessible, and responsive UI using **Shadcn UI** components.
+The system is engineered with a **type-safe, modular, and performance-focused architecture**, enabling reliable data handling, efficient server-state management, and a responsive user experience suitable for both operational teams and store owners.
 
-**Zod** is integrated for **schema validation and type-safe data handling**, ensuring robust validation of forms, API requests, and responses across the application. This improves reliability by enforcing consistent data structures and reducing runtime errors in both client and server interactions.
+This dashboard acts as the **core operational interface** for the AE Naturals ecosystem, integrating seamlessly with the backend API and supporting scalable business workflows.
 
-Key architectural highlights include:
-
-* **Next.js 15 App Router** for optimized routing, server components, and performance.
-* **TypeScript-first development** for strong typing and maintainable code.
-* **TanStack Query** for advanced server-state management, caching, and background synchronization.
-* **Shadcn UI** for a clean, customizable, and accessible component system.
-* **Zod** for runtime schema validation, form validation, and API contract enforcement.
-* **Modular feature-based architecture** to support scalability and future expansion.
-* **Role-based administrative workflows** for secure store and user management.
-* **Responsive dashboard design** optimized for both desktop and tablet usage.
-
-The result is a **production-ready admin platform** capable of managing complex e-commerce operations while maintaining high performance, reliability, and developer experience.
-
-
-🔗 **[Live Demo](https://flower-fairy-admin.vercel.app)** | 🖥️ **[GitHub Repository](https://github.com/gusainDeekshu/flower-fairy-admin)**
+🔗 **Live Demo:** [https://flower-fairy-admin.vercel.app](https://flower-fairy-admin.vercel.app)
+🖥️ **GitHub Repository:** [https://github.com/gusainDeekshu/flower-fairy-admin](https://github.com/gusainDeekshu/flower-fairy-admin)
 
 ---
 
-## ✨ Features
+# 🎯 Project Objectives
 
-* **🔐 Secure Authentication:** Admin login system with protected routes and role-based access control.
-* **📦 Inventory Management:** Comprehensive interface to add, edit, and delete products with complex attributes and variants.
-* **📋 Order Monitoring:** Real-time dashboard to track incoming orders, update fulfillment status (PAID, SHIPPED, DELIVERED), and view customer details.
-* **🏗️ Multi-Store Control:** Manage different storefront configurations, industry settings, and branding metadata from a single interface.
-* **📊 Data Synchronization:** Seamless integration with the backend API using **TanStack Query** for efficient caching and optimistic updates.
-* **🌙 Professional UI:** Modern design featuring a sidebar-based navigation, data tables, and dynamic modals for administrative tasks.
+The primary goal of this admin platform is to deliver:
 
----
+• Centralized control over e-commerce operations
+• Efficient product and inventory management
+• Real-time order monitoring and fulfillment workflows
+• Multi-store administration from a single interface
+• Secure role-based access management
+• High-performance data synchronization with backend systems
 
-## 🛠️ Tech Stack
-
-| Category | Technology |
-| --- | --- |
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript |
-| **State Management** | TanStack Query + Zustand (Auth State) |
-| **Styling** | Tailwind CSS + Shadcn UI |
-| **Authentication** | Custom JWT Integration |
-| **API Client** | Axios (configured with interceptors) |
+The dashboard is designed to be **extensible**, allowing future modules such as analytics, marketing tools, and automation systems to be integrated easily.
 
 ---
 
-## 📂 Folder Structure Overview
+# 🏗️ System Architecture Overview
 
-```text
-src/
-├── app/            # Next.js pages: Login, Dashboard, Orders, and Products
-│   └── api/        # NextAuth and backend proxy routes
-├── components/     # Admin-specific components (Sidebar, Product Modals)
-├── hooks/          # Custom hooks for managing administrative data
-├── lib/            # API client and global utility functions
-├── services/       # Domain-specific API services (Orders, Products, Stores)
-├── store/          # Global state management using Zustand
-└── types/          # Shared TypeScript interfaces and type definitions
+The application follows a **layered architecture** to ensure maintainability and scalability.
+
+### Presentation Layer
+
+Built using:
+
+* Next.js App Router
+* Shadcn UI components
+* Tailwind CSS
+
+Responsibilities:
+
+* UI rendering
+* Form interactions
+* Admin workflows
+* Dashboard navigation
+
+---
+
+### State Management Layer
+
+Two major state types are used:
+
+**Client State**
+Managed with:
+
+* Zustand
+
+Used for:
+
+* Authentication state
+* UI preferences
+* session information
+
+**Server State**
+Managed with:
+
+* TanStack Query
+
+Handles:
+
+* API caching
+* background synchronization
+* automatic refetching
+* optimistic UI updates
+
+---
+
+### Data Validation Layer
+
+All forms and API payloads are validated using:
+
+Zod
+
+This ensures:
+
+• Type-safe validation
+• API contract enforcement
+• Reduced runtime errors
+• Predictable data handling
+
+Examples include:
+
+* Product creation validation
+* Order update validation
+* Store configuration validation
+
+---
+
+### API Integration Layer
+
+Communication with the backend is handled through:
+
+Axios Client (centralized configuration)
+
+Key capabilities:
+
+• Token injection
+• Request/response interceptors
+• Automatic error handling
+• Session-aware API calls
+
+---
+
+# ✨ Core Features
+
+## 🔐 Secure Authentication & Role-Based Access
+
+The dashboard implements a secure authentication system with protected routes and role-aware UI rendering.
+
+Key capabilities:
+
+• JWT-based authentication
+• Protected dashboard routes
+• Session validation
+• Role-based feature access
+
+Example roles:
+
+Admin
+Store Manager
+Operations Team
+
+This ensures sensitive operations such as product edits or order status changes remain controlled.
+
+---
+
+## 📦 Product & Inventory Management
+
+A full-featured product management system allows administrators to manage catalog data effectively.
+
+Capabilities include:
+
+• Add new products
+• Edit product information
+• Manage product variants
+• Update pricing and stock
+• Delete inactive products
+• Upload product images
+
+The interface is designed for **high efficiency**, allowing bulk updates and quick editing.
+
+---
+
+## 📋 Order Monitoring & Fulfillment
+
+The order management system enables administrators to track and manage order lifecycles.
+
+Supported statuses:
+
+PAID
+PROCESSING
+SHIPPED
+DELIVERED
+CANCELLED
+
+Features include:
+
+• Real-time order updates
+• Customer details view
+• Order history tracking
+• Fulfillment workflow management
+
+This allows the operations team to manage logistics smoothly.
+
+---
+
+## 🏗️ Multi-Store Administration
+
+The dashboard supports a **multi-tenant architecture**, enabling management of multiple storefronts from a single admin interface.
+
+Administrators can manage:
+
+• Store branding
+• Industry configurations
+• Theme settings
+• Business metadata
+
+This architecture allows the system to scale into a **multi-brand platform**.
+
+---
+
+## 📊 Smart Data Synchronization
+
+Using **TanStack Query**, the system ensures data is always up-to-date while minimizing unnecessary API calls.
+
+Features include:
+
+• Intelligent caching
+• Background data refresh
+• Mutation tracking
+• Optimistic UI updates
+
+This provides a fast and responsive experience even under heavy workloads.
+
+---
+
+## 🌙 Professional Admin Interface
+
+The UI is designed for productivity and clarity.
+
+Key design features:
+
+Sidebar navigation system
+Data tables for quick management
+Modal-based editing workflows
+Responsive layout for tablets and desktops
+Accessible UI components
+
+Powered by:
+
+Shadcn UI + Tailwind CSS
+
+---
+
+# 🛠️ Technology Stack
+
+| Layer          | Technology     |
+| -------------- | -------------- |
+| Framework      | Next.js 15     |
+| Language       | TypeScript     |
+| Server State   | TanStack Query |
+| Client State   | Zustand        |
+| Styling        | Tailwind CSS   |
+| UI System      | Shadcn UI      |
+| Validation     | Zod            |
+| HTTP Client    | Axios          |
+| Authentication | JWT            |
+
+---
+
+# 📂 Detailed Folder Structure
 
 ```
+src/
+```
+
+## app/
+
+Contains the routing and page structure using Next.js App Router.
+
+Includes:
+
+Login page
+Dashboard layout
+Orders management pages
+Products management pages
+
+Also contains API proxy routes if required.
 
 ---
 
-## 🚀 Getting Started
+## components/
 
-### 1. Prerequisites
+Reusable UI components specifically designed for the admin interface.
 
-* **Node.js** (v20+ recommended)
-* **npm** or **pnpm**
-* Access to a running [AE Naturals Backend](https://www.google.com/search?q=https://github.com/gusainDeekshu/flower-fairy-backend)
+Examples:
 
-### 2. Installation
+Sidebar navigation
+Product creation modal
+Edit product dialog
+Order detail view
+Admin data tables
+
+These components follow a **feature-based structure** for scalability.
+
+---
+
+## hooks/
+
+Custom hooks abstract complex logic such as:
+
+Fetching products
+Fetching orders
+Handling mutations
+Managing admin actions
+
+This keeps components clean and maintainable.
+
+---
+
+## lib/
+
+Core utilities and infrastructure logic.
+
+Includes:
+
+Axios API client
+Token handling
+Global helpers
+
+---
+
+## services/
+
+Service layer responsible for interacting with the backend API.
+
+Examples:
+
+Product Service
+Order Service
+Store Service
+
+This layer improves separation of concerns.
+
+---
+
+## store/
+
+Global state managed by Zustand.
+
+Handles:
+
+Authentication state
+Admin session info
+UI preferences
+
+---
+
+## types/
+
+Centralized TypeScript types used across the application.
+
+Examples:
+
+Product interfaces
+Order interfaces
+Store configuration types
+
+This ensures strong typing across the system.
+
+---
+
+# 🚀 Getting Started
+
+## 1. Prerequisites
+
+Ensure the following tools are installed:
+
+Node.js v20 or higher
+npm or pnpm
+
+You also need a running backend instance:
+
+AE Naturals Backend
+
+---
+
+## 2. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/gusainDeekshu/flower-fairy-admin.git
 cd flower-fairy-admin
-
-# Install dependencies
-npm install
-
 ```
 
-### 3. Environment Variables
+---
 
-Create a `.env.local` file in the root directory:
-
-```env
-NEXT_PUBLIC_API_URL="http://localhost:4000/api/v1"
-NEXTAUTH_SECRET="your_nextauth_secret"
-
-```
-
-### 4. Running Locally
+## 3. Install Dependencies
 
 ```bash
-# Start development server
-npm run dev
+npm install
+```
 
-# Build for production
-npm run build
-npm run start
+or
 
+```bash
+pnpm install
 ```
 
 ---
 
-## 👤 Author
+## 4. Environment Variables
 
-**Deekshant Gusain**
+Create a `.env.local` file in the root directory.
 
-* **GitHub**: [@gusainDeekshu](https://www.google.com/search?q=https://github.com/gusainDeekshu)
-* **Portfolio**: [deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app/)
+Example:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
+NEXTAUTH_SECRET=your_nextauth_secret
+```
+
+These variables configure:
+
+Backend API connection
+Authentication security
 
 ---
 
-## 📄 License
+## 5. Run the Development Server
+
+```bash
+npm run dev
+```
+
+Application will start at:
+
+```
+http://localhost:3000
+```
+
+---
+
+## 6. Production Build
+
+```bash
+npm run build
+npm run start
+```
+
+This generates an optimized production build.
+
+---
+
+# 🔄 Admin Workflow Lifecycle
+
+### Product Management Flow
+
+Admin → Create Product → Validate via Zod → Send API request → Update cache via TanStack Query
+
+---
+
+### Order Processing Flow
+
+Customer places order → Backend updates order → Admin dashboard auto-syncs → Admin updates fulfillment status
+
+---
+
+### Authentication Flow
+
+Admin login → JWT generated → Stored securely → Protected routes unlocked → Session validation on refresh
+
+---
+
+# 🔐 Security Considerations
+
+The dashboard includes several security mechanisms:
+
+Protected routes
+Token-based authentication
+Schema validation with Zod
+Input sanitization
+Role-based UI restrictions
+
+These practices reduce risks such as:
+
+Unauthorized access
+Invalid API payloads
+Data corruption
+
+---
+
+# 📈 Performance Optimizations
+
+Several performance strategies were implemented:
+
+Server Components for lighter client bundles
+TanStack Query caching
+Lazy-loaded modules
+Optimized data fetching
+Minimal re-renders
+
+This ensures smooth performance even when handling large product catalogs.
+
+---
+
+# 🔮 Future Enhancements
+
+The architecture supports future modules such as:
+
+Analytics dashboard
+Revenue reporting
+Marketing campaign manager
+Customer CRM tools
+Shipping integrations
+Automation workflows
+
+---
+
+# 👨‍💻 Author
+
+Deekshant Gusain
+
+GitHub
+[https://github.com/gusainDeekshu](https://github.com/gusainDeekshu)
+
+Portfolio
+[https://deekshantportfoliosite.netlify.app](https://deekshantportfoliosite.netlify.app)
+
+---
+
+# 📄 License
 
 This project is licensed under the **MIT License**.
+
+You are free to:
+
+Use
+Modify
+Distribute
+Deploy commercially
+
