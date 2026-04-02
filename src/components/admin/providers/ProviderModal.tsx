@@ -19,6 +19,8 @@ const PROVIDER_SCHEMAS: Record<string, Record<string, string[]>> = {
     RAZORPAY: ['key_id', 'key_secret'],
     STRIPE: ['public_key', 'secret_key', 'webhook_secret'],
     PHONEPE: ['merchant_id', 'salt_key', 'salt_index', 'frontend_url', 'backend_webhook_url', 'is_production'],
+    // ✅ ADDED PAYU SCHEMA HERE
+    PAYU: ['merchant_key', 'merchant_salt', 'frontend_url', 'is_production'],
   },
 };
 
@@ -61,7 +63,7 @@ export default function ProviderModal({ isOpen, onClose, onSave, initialData, ac
     setConfig(getEmptyConfig(newProv));
   };
 
-  const isSecretField = (key: string) => /secret|password|key/i.test(key);
+  const isSecretField = (key: string) => /secret|password|key|salt/i.test(key); // ✅ Added 'salt' to be hidden
   const toggleSecretView = (key: string) => setShowSecrets(prev => ({ ...prev, [key]: !prev[key] }));
 
   const handleSubmit = async (e: React.FormEvent) => {
