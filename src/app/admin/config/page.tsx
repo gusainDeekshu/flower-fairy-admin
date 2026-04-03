@@ -10,6 +10,7 @@ import {
 import ProviderTable from "@/components/admin/providers/ProviderTable";
 import ProviderModal from "@/components/admin/providers/ProviderModal";
 import { Settings2, Plus } from "lucide-react";
+import SmsEventToggles from '@/components/admin/providers/SmsEventToggles'; 
 
 type TabType = "EMAIL" | "SMS" | "PAYMENT" | "OTHER";
 
@@ -75,6 +76,7 @@ export default function GeneralConfigPage() {
           <Plus size={18} /> Add Provider
         </button>
       </div>
+
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="flex space-x-6 overflow-x-auto pb-px">
@@ -96,9 +98,11 @@ export default function GeneralConfigPage() {
           })}
         </nav>
       </div>
+
       {/* Content */}
       <ProviderTable
-        providers={providers}
+        // 🔥 Filter out EVENT_PREFERENCES so it does not appear in the standard provider list
+        providers={providers.filter((p: ProviderConfig) => p.provider !== 'EVENT_PREFERENCES')}
         isLoading={isLoading}
         onEdit={(p) => {
           setEditingProvider(p);
@@ -106,10 +110,16 @@ export default function GeneralConfigPage() {
         }}
         onToggleActive={(p) => toggleStatusMutation.mutate(p)}
       />
+
+      {/* 🔥 Render the SMS Toggles component only when the SMS tab is active */}
+      {activeTab === "SMS" && (
+        <SmsEventToggles />
+      )}
+
       <ProviderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={(data: ProviderConfig) => saveMutation.mutateAsync(data)} // <-- Change to mutateAsync
+        onSave={(data: ProviderConfig) => saveMutation.mutateAsync(data)} 
         initialData={editingProvider}
         activeType={activeTab}
       />
