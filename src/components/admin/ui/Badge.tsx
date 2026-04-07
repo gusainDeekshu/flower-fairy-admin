@@ -2,6 +2,7 @@ import React from 'react';
 
 interface BadgeProps {
   children: React.ReactNode;
+  className?: string;
   variant?: 'success' | 'error' | 'neutral' | 'warning';
 }
 
