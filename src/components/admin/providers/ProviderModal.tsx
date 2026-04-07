@@ -38,7 +38,8 @@ SMS: {
       'password',        
       'token',           
       'pickup_location', 
-      'channel_id'       // ✅ Added: Often required to map orders to the correct store channel
+      'channel_id',
+      'show_estimation'       // ✅ Added: Often required to map orders to the correct store channel
     ],
     DELHIVERY: ['apiKey', 'clientName'],
     NIMBUSPOST: ['email', 'password', 'token'],
