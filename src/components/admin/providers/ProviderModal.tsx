@@ -31,6 +31,20 @@ SMS: {
     // ✅ ADDED PAYU SCHEMA HERE
     PAYU: ['merchant_key', 'merchant_salt','frontend_url', 'backend_webhook_url', 'is_production'],
   },
+  // ✅ ADDED SHIPPING SCHEMA CATEGORY
+  SHIPPING: {
+    SHIPROCKET: [
+      'email',           
+      'password',        
+      'token',           
+      'pickup_location', 
+      'channel_id',
+      'show_estimation',       // ✅ Added: Often required to map orders to the correct store channel
+      'preferred_courier_name'
+    ],
+    DELHIVERY: ['apiKey', 'clientName'],
+    NIMBUSPOST: ['email', 'password', 'token'],
+  },
 };
 
 export default function ProviderModal({ isOpen, onClose, onSave, initialData, activeType }: any) {
