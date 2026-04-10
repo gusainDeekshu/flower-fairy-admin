@@ -2,8 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save, X, Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast'; // Make sure to run: pnpm add react-hot-toast
+import toast from 'react-hot-toast';
 import { Switch } from '../ui/Switch';
+
+/* ---------------------- TYPE MAPPING ---------------------- */
+
+const FIELD_TYPES: Record<string, 'string' | 'number' | 'boolean'> = {
+  port: 'number',
+  channel_id: 'number',
+  salt_index: 'number',
+
+  secure: 'boolean',
+  is_production: 'boolean',
+  show_estimation: 'boolean',
+};
+
+/* ---------------------- SCHEMA (UNCHANGED DESIGN) ---------------------- */
 
 const PROVIDER_SCHEMAS: Record<string, Record<string, string[]>> = {
   EMAIL: {
@@ -11,43 +25,60 @@ const PROVIDER_SCHEMAS: Record<string, Record<string, string[]>> = {
     AWS_SES: ['accessKeyId', 'secretAccessKey', 'region', 'from'],
     SENDGRID: ['apiKey', 'from'],
   },
-SMS: {
+  SMS: {
     FAST2SMS: ['apiKey'],
     MSG91: [
-      'authKey', 
-      'templateId', // Default (OTP)
-      'template_order_placed', 
-      'template_order_confirmed', 
-      'template_order_shipped', 
-      'template_order_delivered', 
-      'template_order_cancelled'
+      'authKey',
+      'templateId',
+      'template_order_placed',
+      'template_order_confirmed',
+      'template_order_shipped',
+      'template_order_delivered',
+      'template_order_cancelled',
     ],
     TWILIO: ['accountSid', 'authToken', 'fromNumber'],
   },
   PAYMENT: {
     RAZORPAY: ['key_id', 'key_secret'],
     STRIPE: ['public_key', 'secret_key', 'webhook_secret'],
-    PHONEPE: ['merchant_id', 'salt_key', 'salt_index', 'frontend_url', 'backend_webhook_url', 'is_production'],
-    // ✅ ADDED PAYU SCHEMA HERE
-    PAYU: ['merchant_key', 'merchant_salt','frontend_url', 'backend_webhook_url', 'is_production'],
+    PHONEPE: [
+      'merchant_id',
+      'salt_key',
+      'salt_index',
+      'frontend_url',
+      'backend_webhook_url',
+      'is_production',
+    ],
+    PAYU: [
+      'merchant_key',
+      'merchant_salt',
+      'frontend_url',
+      'backend_webhook_url',
+      'is_production',
+    ],
   },
-  // ✅ ADDED SHIPPING SCHEMA CATEGORY
   SHIPPING: {
     SHIPROCKET: [
-      'email',           
-      'password',        
-      'token',           
-      'pickup_location', 
+      'email',
+      'password',
+      'token',
+      'pickup_location',
       'channel_id',
-      'show_estimation',       // ✅ Added: Often required to map orders to the correct store channel
-      'preferred_courier_name'
+      'show_estimation',
+      'preferred_courier_name',
     ],
     DELHIVERY: ['apiKey', 'clientName'],
     NIMBUSPOST: ['email', 'password', 'token'],
   },
 };
 
-export default function ProviderModal({ isOpen, onClose, onSave, initialData, activeType }: any) {
+export default function ProviderModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+  activeType,
+}: any) {
   const [providerName, setProviderName] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [priority, setPriority] = useState(1);
@@ -72,12 +103,15 @@ export default function ProviderModal({ isOpen, onClose, onSave, initialData, ac
         setConfig(defaultProv ? getEmptyConfig(defaultProv) : {});
       }
       setShowSecrets({});
-      setIsSaving(false); // Reset loading state on open
+      setIsSaving(false);
     }
   }, [initialData, isOpen, activeType]);
 
   const getEmptyConfig = (prov: string) => {
-    return (PROVIDER_SCHEMAS[activeType]?.[prov] || []).reduce((acc, key) => ({ ...acc, [key]: '' }), {});
+    return (PROVIDER_SCHEMAS[activeType]?.[prov] || []).reduce(
+      (acc, key) => ({ ...acc, [key]: '' }),
+      {}
+    );
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -86,33 +120,68 @@ export default function ProviderModal({ isOpen, onClose, onSave, initialData, ac
     setConfig(getEmptyConfig(newProv));
   };
 
-  const isSecretField = (key: string) => /secret|password|key|salt/i.test(key); // ✅ Added 'salt' to be hidden
-  const toggleSecretView = (key: string) => setShowSecrets(prev => ({ ...prev, [key]: !prev[key] }));
+  const isSecretField = (key: string) =>
+    /secret|password|key|salt/i.test(key);
+
+  const toggleSecretView = (key: string) =>
+    setShowSecrets((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const getFieldType = (key: string) => FIELD_TYPES[key] || 'string';
+
+  /* ---------------------- VALIDATION ---------------------- */
+
+  const validateConfig = () => {
+    const schema = PROVIDER_SCHEMAS[activeType]?.[providerName] || [];
+    const errors: string[] = [];
+
+    schema.forEach((key) => {
+      const type = getFieldType(key);
+      const value = config[key];
+
+      if (value === '' || value === undefined) {
+        errors.push(`${key} is required`);
+        return;
+      }
+
+      if (type === 'number' && isNaN(value)) {
+        errors.push(`${key} must be a valid number`);
+      }
+
+      if (type === 'boolean' && typeof value !== 'boolean') {
+        errors.push(`${key} must be true or false`);
+      }
+    });
+
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Prevent duplicate submissions
+
     if (isSaving) return;
+
+    const errors = validateConfig();
+    if (errors.length > 0) {
+      toast.error(errors[0]);
+      return;
+    }
 
     try {
       setIsSaving(true);
-      
-      // We await the onSave function (Ensure parent passes a promise, e.g., mutateAsync)
-      await onSave({ 
-        id: initialData?.id, 
-        type: activeType, 
-        provider: providerName, 
-        isActive, 
-        priority, 
-        config 
+
+      await onSave({
+        id: initialData?.id,
+        type: activeType,
+        provider: providerName,
+        isActive,
+        priority,
+        config,
       });
 
       toast.success('Provider configuration saved successfully!');
       onClose();
     } catch (error: any) {
-      console.error('Save error:', error);
-      toast.error(error?.message || 'Failed to save configuration. Please try again.');
+      toast.error(error?.message || 'Failed to save configuration.');
     } finally {
       setIsSaving(false);
     }
@@ -124,112 +193,111 @@ export default function ProviderModal({ isOpen, onClose, onSave, initialData, ac
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
-      <div 
-        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" 
-        onClick={() => !isSaving && onClose()} // Prevent closing by clicking outside while saving
+      <div
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+        onClick={() => !isSaving && onClose()}
       />
-      
-      {/* Changed to <form> to support native HTML validation and "Enter" to submit */}
-      <form 
+
+      <form
         onSubmit={handleSubmit}
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200"
       >
-        {/* Header */}
+        {/* HEADER */}
         <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{initialData ? 'Edit Integration' : 'New Integration'}</h3>
-            <p className="text-sm text-gray-500 mt-0.5">Configure API keys and connection settings.</p>
+            <h3 className="text-lg font-bold text-gray-900">
+              {initialData ? 'Edit Integration' : 'New Integration'}
+            </h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Configure API keys and connection settings.
+            </p>
           </div>
-          <button 
+          <button
             type="button"
-            onClick={onClose} 
+            onClick={onClose}
             disabled={isSaving}
-            className="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 p-2 rounded-full transition-colors shadow-sm border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 p-2 rounded-full"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Body */}
+        {/* BODY */}
         <div className="px-6 py-6 max-h-[65vh] overflow-y-auto space-y-6">
           <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Provider Service</label>
-              <select
-                value={providerName}
-                onChange={handleProviderChange}
-                disabled={!!initialData || isSaving}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed transition-shadow"
-              >
-                {availableProviders.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Failover Priority</label>
-              <input
-                type="number" 
-                min="1" 
-                required
-                value={priority}
-                onChange={(e) => setPriority(Number(e.target.value))}
-                disabled={isSaving}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed transition-shadow"
-                placeholder="e.g., 1 (Highest)"
-              />
-            </div>
-          </div>
+            <select
+              value={providerName}
+              onChange={handleProviderChange}
+              className="w-full px-3 py-2 border rounded-lg"
+            >
+              {availableProviders.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
 
-          <div className={`p-4 bg-gray-50 rounded-xl border border-gray-200 transition-opacity ${isSaving ? 'opacity-60 pointer-events-none' : ''}`}>
-            <Switch 
-              checked={isActive} 
-              onChange={setIsActive} 
-              label="Enable this Provider" 
-              description="If disabled, traffic will route to the next priority provider." 
+            <input
+              type="number"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value))}
+              className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
 
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> API Configuration
-            </h4>
-            <div className="space-y-4">
-              {currentSchema.map((key) => {
-                const isSecret = isSecretField(key);
-                const showVal = showSecrets[key];
-                return (
-                  <div key={key}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5 capitalize">
-                      {key.replace(/_/g, ' ')} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        required
-                        type={isSecret && !showVal ? 'password' : 'text'}
-                        value={config[key] || ''}
-                        onChange={(e) => setConfig({ ...config, [key]: e.target.value })}
-                        disabled={isSaving}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 font-mono disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed transition-shadow pr-10"
-                        placeholder={`Enter ${key}`}
-                      />
-                      {isSecret && (
-                        <button 
-                          type="button" 
-                          onClick={() => toggleSecretView(key)}
-                          disabled={isSaving}
-                          className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {showVal ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <Switch checked={isActive} onChange={setIsActive} />
+
+          {currentSchema.map((key) => {
+            const type = getFieldType(key);
+            const value = config[key];
+            const isSecret = isSecretField(key);
+            const showVal = showSecrets[key];
+
+            return (
+              <div key={key}>
+                <label className="text-sm font-medium">{key}</label>
+
+                {type === 'boolean' ? (
+                  <select
+                    value={value ?? ''}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        [key]: e.target.value === 'true',
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="">Select</option>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                ) : (
+                  <input
+                    type={
+                      type === 'number'
+                        ? 'number'
+                        : isSecret && !showVal
+                        ? 'password'
+                        : 'text'
+                    }
+                    value={value ?? ''}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        [key]:
+                          type === 'number'
+                            ? Number(e.target.value)
+                            : e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Footer */}
+        {/* FOOTER */}
         <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
           <button 
             type="button"
