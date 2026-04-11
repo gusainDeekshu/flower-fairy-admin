@@ -1,10 +1,14 @@
-# 🌸 AE Naturals Admin 
+# 🌸 Flower Fairy Admin 
 
-The **AE Naturals Admin ** is a scalable, enterprise-level administrative platform designed to manage modern e-commerce operations efficiently. Built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**, the dashboard provides a centralized control panel for administrators to manage products, orders, customers, and multi-store configurations.
+
+The **AE Naturals Admin 
+** is a scalable, enterprise-level administrative platform designed to manage modern e-commerce operations efficiently. Built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**, the 
+ provides a centralized control panel for administrators to manage products, orders, customers, and multi-store configurations.
 
 The system is engineered with a **type-safe, modular, and performance-focused architecture**, enabling reliable data handling, efficient server-state management, and a responsive user experience suitable for both operational teams and store owners.
 
-This dashboard acts as the **core operational interface** for the AE Naturals ecosystem, integrating seamlessly with the backend API and supporting scalable business workflows.
+This 
+ acts as the **core operational interface** for the AE Naturals ecosystem, integrating seamlessly with the backend API and supporting scalable business workflows.
 
 🔗 **Live Demo:** [https://flower-fairy-admin.vercel.app](https://flower-fairy-admin.vercel.app)
 🖥️ **GitHub Repository:** [https://github.com/gusainDeekshu/flower-fairy-admin](https://github.com/gusainDeekshu/flower-fairy-admin)
@@ -22,7 +26,8 @@ The primary goal of this admin platform is to deliver:
 • Secure role-based access management
 • High-performance data synchronization with backend systems
 
-The dashboard is designed to be **extensible**, allowing future modules such as analytics, marketing tools, and automation systems to be integrated easily.
+The 
+ is designed to be **extensible**, allowing future modules such as analytics, marketing tools, and automation systems to be integrated easily.
 
 ---
 
@@ -43,7 +48,8 @@ Responsibilities:
 * UI rendering
 * Form interactions
 * Admin workflows
-*  navigation
+* 
+ navigation
 
 ---
 
@@ -116,12 +122,14 @@ Key capabilities:
 
 ## 🔐 Secure Authentication & Role-Based Access
 
-The dashboard implements a secure authentication system with protected routes and role-aware UI rendering.
+The 
+ implements a secure authentication system with protected routes and role-aware UI rendering.
 
 Key capabilities:
 
 • JWT-based authentication
-• Protected dashboard routes
+• Protected 
+ routes
 • Session validation
 • Role-based feature access
 
@@ -177,7 +185,8 @@ This allows the operations team to manage logistics smoothly.
 
 ## 🏗️ Multi-Store Administration
 
-The dashboard supports a **multi-tenant architecture**, enabling management of multiple storefronts from a single admin interface.
+The 
+ supports a **multi-tenant architecture**, enabling management of multiple storefronts from a single admin interface.
 
 Administrators can manage:
 
@@ -252,6 +261,7 @@ Contains the routing and page structure using Next.js App Router.
 Includes:
 
 Login page
+
  layout
 Orders management pages
 Products management pages
@@ -280,10 +290,9 @@ These components follow a **feature-based structure** for scalability.
 
 Custom hooks abstract complex logic such as:
 
-Fetching products
-Fetching orders
-Handling mutations
-Managing admin actions
+* **Node.js** (v20+ recommended)
+* **npm** or **pnpm**
+* Access to a running [Flower Fairy Backend](https://www.google.com/search?q=https://github.com/gusainDeekshu/flower-fairy-backend)
 
 This keeps components clean and maintainable.
 
@@ -432,7 +441,8 @@ Admin → Create Product → Validate via Zod → Send API request → Update ca
 
 ### Order Processing Flow
 
-Customer places order → Backend updates order → Admin dashboard auto-syncs → Admin updates fulfillment status
+Customer places order → Backend updates order → Admin 
+ auto-syncs → Admin updates fulfillment status
 
 ---
 
@@ -444,7 +454,8 @@ Admin login → JWT generated → Stored securely → Protected routes unlocked 
 
 # 🔐 Security Considerations
 
-The dashboard includes several security mechanisms:
+The 
+ includes several security mechanisms:
 
 Protected routes
 Token-based authentication
@@ -478,7 +489,8 @@ This ensures smooth performance even when handling large product catalogs.
 
 The architecture supports future modules such as:
 
-Analytics dashboard
+Analytics 
+
 Revenue reporting
 Marketing campaign manager
 Customer CRM tools
@@ -511,3 +523,4 @@ Distribute
 Deploy commercially
 
 **********************************************************************************************
+*********************************************************************************************

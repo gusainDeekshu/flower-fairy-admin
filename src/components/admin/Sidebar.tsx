@@ -41,7 +41,7 @@ export const Sidebar = () => {
         <div className="h-16 flex justify-between items-center px-6 border-b border-zinc-800">
           <span className="text-xl font-bold text-white flex items-center gap-2">
             <div className="w-6 h-6 bg-rose-500 rounded-md flex items-center justify-center"><Package size={14} className="text-white"/></div>
-            AE Naturals
+            Flower Fairy
           </span>
           <button className="lg:hidden text-zinc-400 hover:text-white transition" onClick={() => setIsOpen(false)}><X size={20} /></button>
         </div>
