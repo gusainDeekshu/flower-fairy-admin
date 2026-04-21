@@ -6,7 +6,10 @@ export interface ProviderConfig {
   provider: string;
   isActive: boolean;
   priority: number;
-  config: Record<string, any>;
+  // Change this to allow string during editing
+  config: string | Record<string, any>; 
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const adminProvidersService = {

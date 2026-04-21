@@ -1,7 +1,25 @@
-import React from 'react';
+// src\components\admin\ui\Card.tsx
 
-export const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}>
-    {children}
-  </div>
+import React, { forwardRef } from "react";
+
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties; 
+}
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ children, className = "", style }, ref) => {
+    return (
+      <div
+        ref={ref}
+        style={style}
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
 );
+
+Card.displayName = "Card";
