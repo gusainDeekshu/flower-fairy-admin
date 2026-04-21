@@ -1,9 +1,145 @@
-# 🌸 AE Naturals - Multi-Tenant E-Commerce Ecosystem
+# 🌸 Flower Fairy Admin 
 
-AE Naturals is a production-grade, high-performance e-commerce platform. It consists of a highly optimized **Next.js Storefront**, a powerful **NestJS Core API**, and a comprehensive **Next.js Admin Dashboard**. Designed for scalability, it supports multi-tenant architecture, complex product enrichment (A+ Content), secure passwordless authentication, and a dynamic 3rd-party provider registry.
 
-🔗 **Storefront Demo:** [https://flower-fairy-murex.vercel.app](https://flower-fairy-murex.vercel.app)
-🔗 **Admin Demo:** [https://flower-fairy-admin.vercel.app](https://flower-fairy-admin.vercel.app)
+The **AE Naturals Admin 
+** is a scalable, enterprise-level administrative platform designed to manage modern e-commerce operations efficiently. Built with **Next.js 15**, **TypeScript**, **Shadcn UI**, **TanStack Query**, and **Zod**, the 
+ provides a centralized control panel for administrators to manage products, orders, customers, and multi-store configurations.
+
+The system is engineered with a **type-safe, modular, and performance-focused architecture**, enabling reliable data handling, efficient server-state management, and a responsive user experience suitable for both operational teams and store owners.
+
+This 
+ acts as the **core operational interface** for the AE Naturals ecosystem, integrating seamlessly with the backend API and supporting scalable business workflows.
+
+🔗 **Live Demo:** [https://flower-fairy-admin.vercel.app](https://flower-fairy-admin.vercel.app)
+🖥️ **GitHub Repository:** [https://github.com/gusainDeekshu/flower-fairy-admin](https://github.com/gusainDeekshu/flower-fairy-admin)
+
+---
+
+# 🎯 Project Objectives
+
+The primary goal of this admin platform is to deliver:
+
+• Centralized control over e-commerce operations
+• Efficient product and inventory management
+• Real-time order monitoring and fulfillment workflows
+• Multi-store administration from a single interface
+• Secure role-based access management
+• High-performance data synchronization with backend systems
+
+The 
+ is designed to be **extensible**, allowing future modules such as analytics, marketing tools, and automation systems to be integrated easily.
+
+---
+
+# 🏗️ System Architecture Overview
+
+The application follows a **layered architecture** to ensure maintainability and scalability.
+
+### Presentation Layer
+
+Built using:
+
+* Next.js App Router
+* Shadcn UI components
+* Tailwind CSS
+
+Responsibilities:
+
+* UI rendering
+* Form interactions
+* Admin workflows
+* 
+ navigation
+
+---
+
+### State Management Layer
+
+Two major state types are used:
+
+**Client State**
+Managed with:
+
+* Zustand
+
+Used for:
+
+* Authentication state
+* UI preferences
+* session information
+
+**Server State**
+Managed with:
+
+* TanStack Query
+
+Handles:
+
+* API caching
+* background synchronization
+* automatic refetching
+* optimistic UI updates
+
+---
+
+### Data Validation Layer
+
+All forms and API payloads are validated using:
+
+Zod
+
+This ensures:
+
+• Type-safe validation
+• API contract enforcement
+• Reduced runtime errors
+• Predictable data handling
+
+Examples include:
+
+* Product creation validation
+* Order update validation
+* Store configuration validation
+
+---
+
+### API Integration Layer
+
+Communication with the backend is handled through:
+
+Axios Client (centralized configuration)
+
+Key capabilities:
+
+• Token injection
+• Request/response interceptors
+• Automatic error handling
+• Session-aware API calls
+
+---
+
+# ✨ Core Features
+
+## 🔐 Secure Authentication & Role-Based Access
+
+The 
+ implements a secure authentication system with protected routes and role-aware UI rendering.
+
+Key capabilities:
+
+• JWT-based authentication
+• Protected 
+ routes
+• Session validation
+• Role-based feature access
+
+Example roles:
+
+Admin
+Store Manager
+Operations Team
+
+This ensures sensitive operations such as product edits or order status changes remain controlled.
 
 ---
 
@@ -108,3 +244,4 @@ npm run dev # Runs on http://localhost:3001
 * Portfolio: [Deekshant Gusain](https://deekshantportfoliosite.netlify.app)
 
 ********************************************************************************
+*****************************************************************************

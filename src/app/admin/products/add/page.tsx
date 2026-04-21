@@ -315,7 +315,7 @@ export default function AddProductPage() {
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Manufacturer</label>
-                    <input {...register("extra.manufacturer")} placeholder="e.g. AE Naturals" className="w-full p-3 border rounded-xl outline-none text-sm font-bold bg-white focus:ring-2 focus:ring-[#006044]" />
+                    <input {...register("extra.manufacturer")} placeholder="e.g. Flower Fairy" className="w-full p-3 border rounded-xl outline-none text-sm font-bold bg-white focus:ring-2 focus:ring-[#006044]" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Origin</label>
