@@ -5,16 +5,16 @@
 import React, { useEffect, useState } from "react";
 import { useStorefrontStore } from "@/store/useStorefrontStore";
 import { HeroBanner } from "./HeroBanner";
-import { CategoryShowcase } from "./CategoryShowcase";
 import { ProductCarousel } from "./ProductCarousel";
 import { PromotionalBanner } from "./PromotionalBanner";
 import { TrustTicker } from "./TrustTicker";
 import { BrandStory } from "./BrandStory";
 import HomeBlogSection from "./HomeBlogSection";
+import { CollectionsShowcase } from "./CollectionsShowcase";
 
 const SECTION_COMPONENTS: Record<string, React.FC<any>> = {
   HERO: HeroBanner,
-  CATEGORIES: CategoryShowcase,
+  COLLECTIONS: CollectionsShowcase,
   PRODUCT_CAROUSEL: ProductCarousel,
   PROMO_BANNER: PromotionalBanner,
   TRUST_BADGES: TrustTicker,
@@ -83,12 +83,11 @@ export default function HomeRenderer({
 
 function resolveData(section: any, data: any) {
   switch (section.type) {
-    case 'CATEGORIES':
-      // The CategoryShowcase component now handles its own data fetching and loading states!
-      return null; 
-      
     case 'PRODUCT_CAROUSEL':
+    case 'FEATURED_PRODUCTS':
       return data[section.settings?.dataSource] || [];
+    case 'COLLECTIONS': // 🚨 REPLACED CATEGORIES WITH COLLECTIONS
+      return null; 
     case 'BLOG_SECTION':
       return data.blogs || [];
     case 'HERO':

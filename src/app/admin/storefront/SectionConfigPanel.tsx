@@ -10,8 +10,7 @@ export function SectionConfigPanel() {
   const { sections, activeSectionId, updateSectionSettings } = useStorefrontStore();
   const activeSection = sections.find((s) => s.id === activeSectionId);
 
-  const isCollectionBlock = activeSection?.type === "CATEGORIES" || activeSection?.type === "COLLECTIONS";
-
+  const isCollectionBlock = activeSection?.type === "COLLECTIONS";
   // 🔥 FETCH COLLECTIONS
   const { 
     data: collections, // <-- Removed the = [] default here to check real loading state

@@ -6,7 +6,7 @@ import apiClient from "@/lib/api-client";
 import { Loader2, AlertTriangle } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 
-interface CategoryShowcaseProps {
+interface CollectionsShowcaseProps {
   settings: {
     title?: string;
     collectionId?: string;
@@ -14,7 +14,7 @@ interface CategoryShowcaseProps {
   };
 }
 
-export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({ settings }) => {
+export const CollectionsShowcase: React.FC<CollectionsShowcaseProps> = ({ settings }) => {
   const { title, collectionId, collectionSlug } = settings;
 
   const { data: collection, isLoading } = useQuery({
